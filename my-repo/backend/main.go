@@ -40,10 +40,31 @@ func main() {
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware)
 
+			// Users
 			r.Get("/users/me", controllers.GetMe)
 			r.Post("/users", controllers.CreateUser)
 			r.Put("/users/{id}", controllers.UpdateUser)
 			r.Delete("/users/{id}", controllers.DeleteUser)
+
+			// Warehouses
+			r.Get("/warehouses", controllers.GetWarehouses)
+			r.Post("/warehouses", controllers.CreateWarehouse)
+			r.Put("/warehouses/{id}", controllers.UpdateWarehouse)
+			r.Delete("/warehouses/{id}", controllers.DeleteWarehouse)
+
+			// Products
+			r.Get("/products", controllers.GetProducts)
+			r.Post("/products", controllers.CreateProduct)
+			r.Put("/products/{id}", controllers.UpdateProduct)
+			r.Delete("/products/{id}", controllers.DeleteProduct)
+
+			// Clients
+			r.Get("/clients", controllers.GetClients)
+			r.Post("/clients", controllers.CreateClient)
+
+			// Sales
+			r.Get("/sales", controllers.GetSales)
+			r.Post("/sales", controllers.CreateSale)
 		})
 	})
 
