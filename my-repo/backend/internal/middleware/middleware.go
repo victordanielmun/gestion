@@ -14,7 +14,31 @@ type contextKey string
 
 const UserIDKey contextKey = "userID"
 
-// ErrorHandler recovers from panics and logs the error, returning a 500 JSON response
+type responseWriterInterceptor struct {
+	http.ResponseWriter
+	wroteHeader bool
+}
+
+func (rw *responseWriterInterceptor) WriteHeader(code int) {
+	if !rw.wroteHeader {
+		if rw.Header().Get("Content-Type") == "" {
+			rw.Header().Set("Content-Type", "application/json")
+		}
+		rw.wroteHeader = true
+	}
+	rw.ResponseWriter.WriteHeader(code)
+}
+
+func (rw *responseWriterInterceptor) Write(b []byte) (int, error) {
+	if !rw.wroteHeader {
+		if rw.Header().Get("Content-Type") == "" {
+			rw.Header().Set("Content-Type", "application/json")
+		}
+		rw.wroteHeader = true
+	}
+	return rw.ResponseWriter.Write(b)
+}
+
 func ErrorHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -31,19 +55,19 @@ func ErrorHandler(next http.Handler) http.Handler {
 	})
 }
 
-// JSONMiddleware forces content type to JSON
+// JSONMiddleware defaults content type to JSON if not set by handler
 func JSONMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		next.ServeHTTP(w, r)
+		interceptor := &responseWriterInterceptor{ResponseWriter: w}
+		next.ServeHTTP(interceptor, r)
 	})
 }
 
-// AuthMiddleware validates JWT and sets UserID in context
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(models.ErrorResponse{Error: "Missing Authorization header"})
 			return
@@ -51,6 +75,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(models.ErrorResponse{Error: "Invalid Authorization header format"})
 			return
@@ -59,6 +84,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		tokenStr := parts[1]
 		claims, err := utils.ValidateJWT(tokenStr)
 		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(models.ErrorResponse{Error: "Invalid or expired token"})
 			return

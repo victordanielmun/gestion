@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	"backend/internal/database"
 	"backend/internal/models"
 )
@@ -36,4 +37,19 @@ func GetAllSales() ([]models.Sale, error) {
 	query := `SELECT id, client_id, seller_id, warehouse_id, quote_id, date, subtotal, discount, tax, total, amount_paid, payment_method, status, notes, created_at, updated_at FROM sales WHERE deleted_at IS NULL`
 	err := database.DB.Select(&sales, query)
 	return sales, err
+}
+
+func GetSaleByID(id uuid.UUID) (*models.Sale, []models.SaleItem, error) {
+	var sale models.Sale
+	query := `SELECT id, client_id, seller_id, warehouse_id, quote_id, date, subtotal, discount, tax, total, amount_paid, payment_method, status, notes, created_at, updated_at FROM sales WHERE id = $1 AND deleted_at IS NULL`
+	err := database.DB.Get(&sale, query, id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var items []models.SaleItem
+	itemQuery := `SELECT id, sale_id, product_id, quantity, unit_price, iva_pct, discount_pct, discount, iva, total FROM sale_items WHERE sale_id = $1`
+	err = database.DB.Select(&items, itemQuery, id)
+
+	return &sale, items, err
 }

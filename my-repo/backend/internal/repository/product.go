@@ -28,3 +28,10 @@ func DeleteProduct(id uuid.UUID) error {
 	_, err := database.DB.Exec(`UPDATE products SET deleted_at = $1 WHERE id = $2`, time.Now(), id)
 	return err
 }
+
+func GetProductByID(id uuid.UUID) (*models.Product, error) {
+	var p models.Product
+	query := `SELECT id, name, description, reference, barcode, purchase_price, sale_price, iva_pct, expiration_date, is_active, created_at, updated_at FROM products WHERE id = $1 AND deleted_at IS NULL`
+	err := database.DB.Get(&p, query, id)
+	return &p, err
+}

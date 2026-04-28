@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/go-chi/chi/v5"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -77,4 +78,39 @@ func GetSales(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(sales)
+}
+
+func DownloadSalePDF(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.ErrorResponse{Error: "Invalid ID format"})
+		return
+	}
+
+	sale, items, err := repository.GetSaleByID(id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(models.ErrorResponse{Error: "Sale not found"})
+		return
+	}
+
+	pdfBuf, err := services.GenerateInvoicePDF(sale, items)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(models.ErrorResponse{Error: "Failed to generate PDF"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", "inline; filename=factura_"+id.String()[:8]+".pdf")
+	w.Header().Set("Content-Length", string(pdfBuf.Len()))
+
+	// Note: We bypass JSONMiddleware's application/json forcing
+	// by directly writing to the writer if possible,
+	// but since middleware runs before, it might have set it to json.
+	// We override it here which is usually fine if written before WriteHeader/Write.
+
+	w.Write(pdfBuf.Bytes())
 }

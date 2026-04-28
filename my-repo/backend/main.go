@@ -65,6 +65,7 @@ func main() {
 			// Sales
 			r.Get("/sales", controllers.GetSales)
 			r.Post("/sales", controllers.CreateSale)
+			r.Get("/sales/{id}/pdf", controllers.DownloadSalePDF)
 		})
 	})
 
