@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"encoding/json"
 	"net/http"
@@ -105,7 +106,7 @@ func DownloadSalePDF(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "inline; filename=factura_"+id.String()[:8]+".pdf")
-	w.Header().Set("Content-Length", string(pdfBuf.Len()))
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", pdfBuf.Len()))
 
 	// Note: We bypass JSONMiddleware's application/json forcing
 	// by directly writing to the writer if possible,
