@@ -565,3 +565,25 @@ INSERT INTO roles (name, permissions) VALUES
     ('bodeguero', '{"users":false,"roles":false,"warehouses":true,"products":true,"inventory":true,"sales":false,"invoices":false,"reports":false}'),
     ('contador',  '{"users":false,"roles":false,"warehouses":false,"products":false,"inventory":false,"sales":true,"invoices":true,"reports":true}')
 ON CONFLICT (name) DO NOTHING;
+
+-- =============================================================================
+-- MÓDULO 12: CONFIGURACIÓN DE EMPRESA
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS company_settings (
+    id         UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    name       VARCHAR(200) NOT NULL,
+    rut        VARCHAR(50),
+    address    TEXT,
+    phone      VARCHAR(50),
+    email      VARCHAR(150),
+    website    VARCHAR(150),
+    logo_url   TEXT,
+    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+-- Ensure there is only one settings record
+CREATE UNIQUE INDEX idx_single_company_settings ON company_settings ((1));
+
+-- Insert default row
+INSERT INTO company_settings (name) VALUES ('Mi Empresa') ON CONFLICT DO NOTHING;

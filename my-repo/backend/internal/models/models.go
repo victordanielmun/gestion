@@ -116,3 +116,15 @@ type SaleItem struct {
 	Iva         float64   `db:"iva" json:"iva"`
 	Total       float64   `db:"total" json:"total"`
 }
+
+type CompanySettings struct {
+	ID        uuid.UUID `db:"id" json:"id"`
+	Name      string    `db:"name" json:"name"`
+	RUT       *string   `db:"rut" json:"rut"`
+	Address   *string   `db:"address" json:"address"`
+	Phone     *string   `db:"phone" json:"phone"`
+	Email     *string   `db:"email" json:"email"`
+	Website   *string   `db:"website" json:"website"`
+	LogoUrl   *string   `db:"logo_url" json:"logo_url"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}

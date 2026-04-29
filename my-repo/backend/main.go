@@ -32,6 +32,11 @@ func main() {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Get("/uploads/*", func(w http.ResponseWriter, r *http.Request) {
+			fs := http.StripPrefix("/api/v1/uploads/", http.FileServer(http.Dir("./uploads")))
+			fs.ServeHTTP(w, r)
+		})
+
 		// Public routes
 		r.Post("/login", controllers.Login)
 		r.Post("/logout", controllers.Logout)
@@ -61,6 +66,11 @@ func main() {
 			// Clients
 			r.Get("/clients", controllers.GetClients)
 			r.Post("/clients", controllers.CreateClient)
+
+			// Settings
+			r.Get("/settings", controllers.GetCompanySettings)
+			r.Put("/settings", controllers.UpdateCompanySettings)
+			r.Post("/settings/logo", controllers.UploadLogo)
 
 			// Sales
 			r.Get("/sales", controllers.GetSales)
