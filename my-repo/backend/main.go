@@ -11,12 +11,23 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 func main() {
 	database.Connect()
 
 	r := chi.NewRouter()
+
+	// CORS
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3001", "http://127.0.0.1:3001"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 
 	// Global Middlewares
 	r.Use(chimiddleware.RequestID)
@@ -40,12 +51,18 @@ func main() {
 		// Public routes
 		r.Post("/login", controllers.Login)
 		r.Post("/logout", controllers.Logout)
+		r.Get("/settings", controllers.GetCompanySettings)
 
 		// Protected routes
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware)
 
+			// Stats
+			r.Get("/stats", controllers.GetDashboardStats)
+
 			// Users
+			r.Get("/users", controllers.GetUsers)
+			r.Get("/roles", controllers.GetRoles)
 			r.Get("/users/me", controllers.GetMe)
 			r.Post("/users", controllers.CreateUser)
 			r.Put("/users/{id}", controllers.UpdateUser)
@@ -63,14 +80,26 @@ func main() {
 			r.Put("/products/{id}", controllers.UpdateProduct)
 			r.Delete("/products/{id}", controllers.DeleteProduct)
 
+			// Categories
+			r.Get("/categories", controllers.GetCategories)
+			r.Post("/categories", controllers.CreateCategory)
+			r.Put("/categories/{id}", controllers.UpdateCategory)
+			r.Delete("/categories/{id}", controllers.DeleteCategory)
+
 			// Clients
 			r.Get("/clients", controllers.GetClients)
 			r.Post("/clients", controllers.CreateClient)
+			r.Put("/clients/{id}", controllers.UpdateClient)
+			r.Delete("/clients/{id}", controllers.DeleteClient)
 
 			// Settings
-			r.Get("/settings", controllers.GetCompanySettings)
 			r.Put("/settings", controllers.UpdateCompanySettings)
 			r.Post("/settings/logo", controllers.UploadLogo)
+
+			// Inventory
+			r.Get("/inventory/stock", controllers.GetInventoryStock)
+			r.Post("/inventory/replenish", controllers.ReplenishInventory)
+			r.Post("/inventory/transfer", controllers.TransferInventory)
 
 			// Sales
 			r.Get("/sales", controllers.GetSales)

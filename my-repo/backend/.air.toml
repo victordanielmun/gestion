@@ -1,0 +1,23 @@
+# Configuración para Air (Live Reload)
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  bin = "./tmp/main"
+  cmd = "go build -o ./tmp/main ."
+  delay = 1000
+  exclude_dir = ["assets", "tmp", "vendor"]
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  exclude_regex = ["_test.go"]
+  log = "air.log"
+
+[log]
+  time = true
+
+[color]
+  main = "magenta"
+  build = "yellow"
+  runner = "green"
+
+[misc]
+  clean_on_exit = true

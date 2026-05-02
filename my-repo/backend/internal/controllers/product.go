@@ -11,7 +11,15 @@ import (
 )
 
 func GetProducts(w http.ResponseWriter, r *http.Request) {
-	products, err := repository.GetAllProducts()
+	categoryIDStr := r.URL.Query().Get("category_id")
+	var categoryID uuid.UUID
+	if categoryIDStr != "" {
+		if id, err := uuid.Parse(categoryIDStr); err == nil {
+			categoryID = id
+		}
+	}
+
+	products, err := repository.GetAllProducts(categoryID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

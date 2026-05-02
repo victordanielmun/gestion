@@ -1,6 +1,6 @@
 module backend
 
-go 1.25.0
+go 1.23
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
@@ -11,10 +11,11 @@ require (
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/lib/pq v1.12.3
 	github.com/stretchr/testify v1.2.2
-	golang.org/x/crypto v0.50.0
+	golang.org/x/crypto v0.28.0
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.0 // indirect
+	github.com/go-chi/cors v1.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )

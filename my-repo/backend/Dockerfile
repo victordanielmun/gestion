@@ -1,14 +1,15 @@
-FROM golang:1.21-alpine
+FROM golang:1.23-alpine
 
 WORKDIR /app
+
+# Instalar Air para hot reload
+RUN go install github.com/cosmtrek/air@v1.52.0
 
 COPY go.mod ./
 RUN go mod download
 
 COPY . .
 
-RUN go build -o main .
-
 EXPOSE 8080
 
-CMD ["./main"]
+CMD ["air", "-c", ".air.toml"]

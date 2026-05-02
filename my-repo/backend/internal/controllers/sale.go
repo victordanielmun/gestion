@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"backend/internal/database"
 	"backend/internal/middleware"
 	"backend/internal/models"
 	"backend/internal/repository"
@@ -35,12 +36,36 @@ func CreateSale(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var subtotal, tax, total float64
-	for _, item := range req.Items {
+	for i := range req.Items {
+		item := &req.Items[i]
 		item.Total = item.Quantity * item.UnitPrice
 		item.Iva = item.Total * (item.IvaPct / 100)
 		subtotal += item.Total
 		tax += item.Iva
 		total += item.Total + item.Iva
+
+		// Load product type
+		var prod models.Product
+		err := database.DB.Get(&prod, "SELECT id, name, product_type FROM products WHERE id = $1", item.ProductID)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(models.ErrorResponse{Error: "Producto no encontrado"})
+			return
+		}
+
+		// Validate stock for physical products
+		if prod.ProductType == "product" {
+			var qty float64
+			err = database.DB.Get(&qty, "SELECT COALESCE(quantity, 0) FROM inventory WHERE product_id = $1 AND warehouse_id = $2", item.ProductID, req.WarehouseID)
+			if err != nil || qty < item.Quantity {
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(models.ErrorResponse{
+					Error:   "No hay suficiente stock en la bodega seleccionada para el producto: " + prod.Name,
+					Details: fmt.Sprintf("Disponible: %v, Solicitado: %v", qty, item.Quantity),
+				})
+				return
+			}
+		}
 	}
 
 	sale := models.Sale{
@@ -64,8 +89,7 @@ func CreateSale(w http.ResponseWriter, r *http.Request) {
 
 	// Auditing / Inventory
 	if err := services.ProcessSaleInventory(&sale, req.Items); err != nil {
-		// Non-blocking but should be logged realistically
-		// Could send a warning response
+		// Non-blocking but logged
 	}
 
 	w.WriteHeader(http.StatusCreated)

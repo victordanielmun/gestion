@@ -12,6 +12,26 @@ import (
 	"github.com/google/uuid"
 )
 
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := repository.GetAllUsers()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(models.ErrorResponse{Error: "Failed to fetch users"})
+		return
+	}
+	json.NewEncoder(w).Encode(users)
+}
+
+func GetRoles(w http.ResponseWriter, r *http.Request) {
+	roles, err := repository.GetRoles()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(models.ErrorResponse{Error: "Failed to fetch roles"})
+		return
+	}
+	json.NewEncoder(w).Encode(roles)
+}
+
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var req models.CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

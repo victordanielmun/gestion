@@ -137,6 +137,7 @@ CREATE TABLE IF NOT EXISTS products (
     -- IVA en porcentaje: 0, 5 ó 19 (Colombia)
     iva_pct         NUMERIC(5,2)    NOT NULL DEFAULT 19.00,
     expiration_date DATE,
+    product_type    VARCHAR(20)     NOT NULL DEFAULT 'product',
     is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),

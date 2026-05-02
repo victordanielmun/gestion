@@ -51,3 +51,23 @@ func DeleteUser(id uuid.UUID) error {
     _, err := database.DB.Exec(`UPDATE users SET deleted_at = $1 WHERE id = $2`, time.Now(), id)
     return err
 }
+
+func GetAllUsers() ([]models.User, error) {
+	var users []models.User
+	query := `
+		SELECT u.id, u.name, u.email, u.role_id, u.is_active, u.last_login_at, u.created_at, u.updated_at,
+		       r.id AS "role.id", r.name AS "role.name", r.permissions AS "role.permissions"
+		FROM users u
+		JOIN roles r ON u.role_id = r.id
+		WHERE u.deleted_at IS NULL
+		ORDER BY u.created_at DESC`
+	err := database.DB.Select(&users, query)
+	return users, err
+}
+
+func GetRoles() ([]models.Role, error) {
+	var roles []models.Role
+	query := `SELECT id, name, permissions, created_at, updated_at FROM roles WHERE deleted_at IS NULL ORDER BY name ASC`
+	err := database.DB.Select(&roles, query)
+	return roles, err
+}

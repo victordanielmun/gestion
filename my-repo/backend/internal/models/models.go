@@ -37,10 +37,13 @@ type Product struct {
 	SalePrice      float64    `db:"sale_price" json:"sale_price"`
 	IvaPct         float64    `db:"iva_pct" json:"iva_pct"`
 	ExpirationDate *time.Time `db:"expiration_date" json:"expiration_date"`
+	ProductType    string     `db:"product_type" json:"product_type"` // "product" or "service"
 	IsActive       bool       `db:"is_active" json:"is_active"`
-	CreatedAt      time.Time  `db:"created_at" json:"created_at"`
-	UpdatedAt      time.Time  `db:"updated_at" json:"updated_at"`
-	DeletedAt      *time.Time `db:"deleted_at" json:"-"`
+	CreatedAt      time.Time   `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time   `db:"updated_at" json:"updated_at"`
+	DeletedAt      *time.Time  `db:"deleted_at" json:"-"`
+	CategoryIDs    []uuid.UUID `db:"-" json:"category_ids,omitempty"`
+	Categories     []Category  `db:"-" json:"categories,omitempty"`
 }
 
 type Inventory struct {
