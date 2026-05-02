@@ -20,8 +20,13 @@ func main() {
 	r := chi.NewRouter()
 
 	// CORS
+	allowedOrigins := []string{"http://localhost:3001", "http://127.0.0.1:3001", "http://18.216.221.235:3001"}
+	if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
+		allowedOrigins = append(allowedOrigins, frontendURL)
+	}
+
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3001", "http://127.0.0.1:3001"},
+		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
